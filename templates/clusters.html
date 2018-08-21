@@ -1,0 +1,17 @@
+{% include "header.html" %}
+
+<div class="chooser text-center">
+  <h2>{{ project.project_name }}</h2>
+  <h4>Target: {{ project.target }}</h4>
+</div>
+
+<div class="controlpanel text-center">
+    <H1>Explanation Clusters</H1>
+    <H3>Model {{ model.model_type }}</H3>
+    <H4>Method: {{method}}<H4>
+    <H4>Parameter: {{param}}<H4>
+</div>
+
+<img src="{{ pdplot }}">
+
+{% include "footer.html" %}
