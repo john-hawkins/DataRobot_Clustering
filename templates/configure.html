@@ -61,15 +61,15 @@
      </table>
     </div>
   </form>
+ <div id="placeholder" style="margin: 10 auto; width: 680px;"></div>
 </div>
 
-<div id="placehoder"></div>
 <script>
-   bootstrap_alert = function() {}
-   bootstrap_alert.warning = function(message) {
-   $('#placeholder').html('<div class="alert"><a class="close" data-dismiss="alert">×</a><span>'+message+'</span></div>')
-        }
-    $('#generate').on('click', function() {bootstrap_alert.warning('Please be patient, this can take a while.');
+  bootstrap_alert = function(message) {
+    $('#placeholder').html(
+      '<div class="alert alert-warning"><a class="close" data-dismiss="alert">×</a><span>'+message+'</span></div>');
+   }
+   $('#generate').on('click', function() {bootstrap_alert('Please be patient, this can take 5-10 minutes to calculate.');
 });
 </script>
 
