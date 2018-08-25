@@ -41,10 +41,13 @@ def calculate_custom_distance(row1, row2, n_reasons=5):
 #######################################################################
 # K Means Cluster on Explanation Strength 
 # #############################################################
-def kmeans_cluster_by_strength(all_rows, kvalue, include_score=True, n_reasons=5):
-    dfnew = pe.get_strength_per_feature_cols(all_rows, n_reasons)
+def kmeans_cluster_by_strength(proj, all_rows, kvalue, include_score=True, n_reasons=5):
+    dfnew = pe.get_strength_per_feature_cols(proj, all_rows, n_reasons)
     if include_score:
-        dfnew['dr_score'] = all_rows['class_1_probability']
+        if proj.target_type == 'Regression':
+            dfnew['dr_score'] = all_rows['prediction']
+        else :
+            dfnew['dr_score'] = all_rows['class_1_probability']
     kmeans = KMeans(n_clusters=kvalue)
     kmeans = kmeans.fit(dfnew)
     labels = kmeans.predict(dfnew)
@@ -65,12 +68,15 @@ def sample_down(pdata):
 def generate_kmeans_cluster_plot(proj, mod, pdata, kvalue, colone, coltwo):
     rdata = sample_down(pdata)
     expl_rows = pe.retrieve_prediction_explanations(proj, mod, rdata)
-    dfsample, kmeans, labels = kmeans_cluster_by_strength(expl_rows, kvalue)
+    dfsample, kmeans, labels = kmeans_cluster_by_strength(proj, expl_rows, kvalue)
     print("Clustering finished: ")
     TARGET=proj.target
     dim1 = rdata[colone]
     dim2 = rdata[coltwo]
-    dim3 = expl_rows['class_1_probability']
+    if proj.target_type == 'Regression':
+        dim3 = expl_rows['prediction']
+    else :
+        dim3 = expl_rows['class_1_probability']
     strlabs = [('C'+str(elem)) for elem in labels]
     mpl.rcParams['legend.fontsize'] = 10
     fig = plt.figure()

@@ -54,10 +54,17 @@ def retrieve_prediction_explanations(proj, mod, pdata, n_reasons = 5):
 # TRANSFORMATION OF THE PREDICTION EXPLANATIONS INTO A SET OF 
 # COLUMNS PER FEATURE WITH THE QUANTITATIVE PREDICTION STRENGTH 
 # VALUE IN THE DATA CELL
+# WE NEED TO KNOW THE PROJECT TYPE TO DETERMINE THE COLUMN NUMBER
+# WHERE THE EXPLANATIONS START.
 # #############################################################
-def get_strength_per_feature_cols(all_rows, n_reasons=5):
+def get_strength_per_feature_cols(proj, all_rows, n_reasons=5):
     colsToUse = []
-    j = 6  
+    startPoint = 6
+    if proj.target_type == 'Regression':
+        startPoint = 2
+    if proj.target_type == 'Binary':
+        startPoint = 6
+    j = startPoint
     for i in range(n_reasons):
         colsToUse.append(j) 
         colsToUse.append(j+4)
