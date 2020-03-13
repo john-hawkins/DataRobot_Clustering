@@ -1,10 +1,15 @@
 
-Clustering Predictions
-========================
+DataRobot Prediction Explanation Clustering 
+===========================================
 
-This project demonstrates how you can take a data robot model
-and score a new data set to retrieve the prediction explanations
-and then cluster those explanations and visualise them.
+This project demonstrates how you can take a DataRobot model
+and build clusters on the basis of the prediction explanations.
+
+```
+Status: Functional
+
+Todo: Generate a downloadable dataset with the cluster labels added
+```
 
 ## Dependencies
  
@@ -18,6 +23,7 @@ pip install pandas
 pip install sklearn
 pip install matplotlib
 pip install functools
+pip install hdbscan
 pip install datarobot
 ```
 
@@ -39,8 +45,11 @@ The above functions are used by the example script and the web application examp
 
 ## Caveats
 
-Currently the implementation does k-means on prediction explanation strength only.
-Additional algorithms, features and distance metrics will be added.
+Currently the implementation allows you to build either  K-Means or HDBScan clusters.
+The clustering is done on a sparse matrix representation of the prediction explanation strengths.
+
+Additional algorithms, features and distance metrics will be added given time.
+
 
 ## Usage
 

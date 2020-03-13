@@ -12,6 +12,8 @@ import matplotlib as mpl
 import datarobot as dr
 import pandas as pd
 import numpy as np
+import seaborn as sns
+import hdbscan
 
 MAX_SAMPLES = 2000
 
@@ -54,6 +56,21 @@ def kmeans_cluster_by_strength(proj, all_rows, kvalue, include_score=True, n_rea
     return (dfnew, kmeans, labels)
 
 #######################################################################
+# HDBscan Cluster on Explanation Strength
+# #############################################################
+def hdbscan_cluster_by_strength(proj, all_rows, minsize, include_score=True, n_reasons=5):
+    dfnew = pe.get_strength_per_feature_cols(proj, all_rows, n_reasons)
+    if include_score:
+        if proj.target_type == 'Regression':
+            dfnew['dr_score'] = all_rows['prediction']
+        else :
+            dfnew['dr_score'] = all_rows['class_1_probability']
+ 
+    clusterer = hdbscan.HDBSCAN(min_cluster_size=minsize, prediction_data=True, gen_min_span_tree=True)
+    clusterer.fit(dfnew)
+    return (dfnew, clusterer )
+
+#######################################################################
 # SAMPLE THE DATA SET DOWN BEFORE RUNNING ANY PROCESSES
 #########################################################################
 def sample_down(pdata):
@@ -69,7 +86,7 @@ def generate_kmeans_cluster_plot(proj, mod, pdata, kvalue, colone, coltwo):
     rdata = sample_down(pdata)
     expl_rows = pe.retrieve_prediction_explanations(proj, mod, rdata)
     dfsample, kmeans, labels = kmeans_cluster_by_strength(proj, expl_rows, kvalue)
-    print("Clustering finished: ")
+    print("KMeans Clustering finished")
     TARGET=proj.target
     dim1 = rdata[colone]
     dim2 = rdata[coltwo]
@@ -88,8 +105,41 @@ def generate_kmeans_cluster_plot(proj, mod, pdata, kvalue, colone, coltwo):
     return plt
 
 #######################################################################
+# RUN HDBSCAN CLUSTER AND PLOT
+#########################################################################
+def generate_hdbscan_cluster_plot(proj, mod, pdata, kvalue, colone, coltwo):
+    rdata = sample_down(pdata)
+    expl_rows = pe.retrieve_prediction_explanations(proj, mod, rdata)
+    dfsample, clusterer = hdbscan_cluster_by_strength(proj, expl_rows, kvalue)
+    print("HDBScan Clustering finished")
+
+    dim1 = rdata[colone]
+    dim2 = rdata[coltwo]
+    num_clusters = len(np.unique(clusterer.labels_))
+    pal = sns.color_palette('deep', num_clusters)
+    colors = [sns.desaturate(pal[col], sat) for col, sat in zip(clusterer.labels_,
+                                                            clusterer.probabilities_)]
+    plt.scatter( dim1, dim2, c=colors);
+    return plt
+
+
+#######################################################################
 # CREATE CLUSTER PLOT AND SAVE IT IN A FILE
 #########################################################################
 def create_and_save_kmeans_cluster_plot(proj, mod, pdata, kvalue, colone, coltwo, filename):
     plt = generate_kmeans_cluster_plot(proj, mod, pdata, kvalue, colone, coltwo)
     plt.savefig(filename, format='png')
+    print("SAVED")
+    plt.close()
+
+#######################################################################
+# CREATE CLUSTER PLOT AND SAVE IT IN A FILE
+#########################################################################
+def create_and_save_hdbscan_cluster_plot(proj, mod, pdata, kvalue, colone, coltwo, filename):
+    plt = generate_hdbscan_cluster_plot(proj, mod, pdata, kvalue, colone, coltwo)
+    plt.savefig(filename, format='png')
+    print("SAVED")
+    plt.close()
+
+
+

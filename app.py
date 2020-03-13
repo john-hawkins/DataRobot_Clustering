@@ -61,6 +61,7 @@ def cluster():
         projectId = request.form["projectId"]
         modelId = request.form["modelId"]
         kvalue = int(request.form["kvalue"])
+        method = request.form["method"]
         colone = request.form["colone"]
         coltwo = request.form["coltwo"]
 
@@ -77,7 +78,7 @@ def cluster():
         plotpath = "static/" \
             + projectId + "-" \
             + modelId + "-" \
-            + str(kvalue) + ".png"
+            + str(method) + "_" + str(kvalue) + ".png"
 
         print("Checking for file: ", plotpath)
 
@@ -86,19 +87,22 @@ def cluster():
             print("Found it, rendering")
             return render_template(
                 "clusters.html", project=proj, model=mod, 
-                method='K-Means', param=kvalue, pdplot=plotpath)
+                method=method, param=kvalue, pdplot=plotpath)
 
         # ########################################################
         # check if the post request has the file part
         if 'file' not in request.files:
             message = 'No file supplied'
             print("Message: ", message)
+            return render_template( "error.html", project=proj, model=mod, message=message )
         file = request.files['file']
         # if user does not select file, browser also
         # submit an empty part without filename
         if file.filename == '':
             message = 'empty filname'
             print("Message: ", message)
+            return render_template( "error.html", project=proj, model=mod, message=message )
+
         nrows = 0
         ncols = 0
         if file and allowed_file(file.filename):
@@ -108,17 +112,21 @@ def cluster():
             pdata = pd.read_csv(filepath)
             nrows =  len(pdata)
             ncols = len(pdata.columns)
-  
-            drc.create_and_save_kmeans_cluster_plot(
-                proj, mod, pdata, int(kvalue), 
-                colone, coltwo, plotpath)
+
+            if method=='hdbscan':
+                drc.create_and_save_hdbscan_cluster_plot(
+                    proj, mod, pdata, int(kvalue), 
+                    colone, coltwo, plotpath)
+            else:
+                drc.create_and_save_kmeans_cluster_plot(
+                    proj, mod, pdata, int(kvalue),
+                    colone, coltwo, plotpath)
 
             return render_template(
                 "clusters.html", project=proj, model=mod, 
-                colone=colone, coltwo=coltwo, method='K-means', 
+                colone=colone, coltwo=coltwo, method=method, 
                 param=kvalue, pdplot=plotpath)
  
-
 
 # ###################################################################################
 # About Page
